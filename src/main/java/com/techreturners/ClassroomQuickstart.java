@@ -30,13 +30,8 @@ public class ClassroomQuickstart {
     private static final String APPLICATION_NAME = "Google Classroom API Java Quickstart";
     private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
     private static final String TOKENS_DIRECTORY_PATH = "tokens";
-
     private static final String JAVA_COURSE_ID = "579045242269";
 
-    /**
-     * Global instance of the scopes required by this quickstart.
-     * If modifying these scopes, delete your previously saved tokens/ folder.
-     */
     private static final List<String> SCOPES =
             List.of(ClassroomScopes.CLASSROOM_COURSES_READONLY,
                     ClassroomScopes.CLASSROOM_ROSTERS_READONLY,
@@ -45,13 +40,9 @@ public class ClassroomQuickstart {
 
     private static final String CREDENTIALS_FILE_PATH = "/credentials.json";
 
-    /**
-     * Creates an authorized Credential object.
-     *
-     * @param HTTP_TRANSPORT The network HTTP Transport.
-     * @return An authorized Credential object.
-     * @throws IOException If the credentials.json file cannot be found.
-     */
+    public ClassroomQuickstart() throws GeneralSecurityException, IOException {
+    }
+
     private static Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT)
             throws IOException {
         // Load client secrets.
@@ -61,7 +52,6 @@ public class ClassroomQuickstart {
         }
         GoogleClientSecrets clientSecrets =
                 GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
-
         // Build flow and trigger user authorization request.
         GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
                 HTTP_TRANSPORT, JSON_FACTORY, clientSecrets, SCOPES)
@@ -72,13 +62,14 @@ public class ClassroomQuickstart {
         return new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
     }
 
+    final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
+    // Build a new authorized API client service.
+    Classroom service =
+            new Classroom.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
+                    .setApplicationName(APPLICATION_NAME)
+                    .build();
+
     public List<Course> getCourses() throws IOException, GeneralSecurityException {
-        // Build a new authorized API client service.
-        final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
-        Classroom service =
-                new Classroom.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
-                        .setApplicationName(APPLICATION_NAME)
-                        .build();
 
         ListCoursesResponse response = service.courses().list()
                 .setPageSize(10)
@@ -86,67 +77,58 @@ public class ClassroomQuickstart {
         List<Course> courses = response.getCourses();
         if (courses == null || courses.size() == 0) {
             System.out.println("No courses found.");
-        } else {
-            System.out.println("Courses:");
-            for (Course course : courses) {
-                System.out.printf("%s\n", course.getName() + " Course Id: " + course.getId());
-
-            }
         }
         return courses;
     }
 
-//        ListStudentsResponse response2 = service.courses().students().list(JAVA_COURSE_ID)
-//                .setPageSize(30)
-//                .execute();
-//        List<Student> students = response2.getStudents();
-//        if (students == null || students.size() == 0) {
-//            System.out.println("No students found.");
-//        } else {
-//            System.out.println("Students:");
-//            for (Student student : students) {
-//                System.out.printf("%s\n", student.getProfile());
-//            }
-//        }
-//
-//        List<Topic> topics = new ArrayList<>();
-//        String pageToken = null;
-//        try {
-//            do {
-//                ListTopicResponse listTopicResponseesponse =
-//                        service
-//                                .courses()
-//                                .topics()
-//                                .list(JAVA_COURSE_ID)
-//                                .setPageSize(100)
-//                                .setPageToken(pageToken)
-//                                .execute();
-//
-//                /* Ensure that the response is not null before retrieving data from it to avoid errors. */
-//                if (listTopicResponseesponse.getTopic() != null) {
-//                    topics.addAll(listTopicResponseesponse.getTopic());
-//                    pageToken = listTopicResponseesponse.getNextPageToken();
-//                }
-//            } while (pageToken != null);
-//
-//            if (topics.isEmpty()) {
-//                System.out.println("No topics found.");
-//            } else {
-//                for (Topic topic : topics) {
-//                    System.out.printf("%s (%s)\n", topic.getName(), topic.getTopicId());
-//                }
-//            }
-//        } catch (GoogleJsonResponseException e) {
-//            // TODO (developer) - handle error appropriately
-//            GoogleJsonError error = e.getDetails();
-//            System.out.println(error);
-//            if (error.getCode() == 404) {
-//                System.out.printf("The courseId does not exist: %s.\n", JAVA_COURSE_ID);
-//            } else {
-//                throw e;
-//            }
-//        } catch (Exception e) {
-//            throw e;
-//        }
+    public List<Student> getStudentList() throws IOException, GeneralSecurityException {
+        ListStudentsResponse response2 = service.courses().students().list(JAVA_COURSE_ID)
+                .setPageSize(30)
+                .execute();
+        List<Student> students = response2.getStudents();
+        if (students == null || students.size() == 0) {
+            System.out.println("No students found.");
+        }
+        return students;
+    }
 
+
+    public List<Topic> getTopics() throws IOException, GeneralSecurityException {
+        List<Topic> topics = new ArrayList<>();
+        String pageToken = null;
+        try {
+            do {
+                ListTopicResponse listTopicResponseesponse =
+                        service
+                                .courses()
+                                .topics()
+                                .list(JAVA_COURSE_ID)
+                                .setPageSize(100)
+                                .setPageToken(pageToken)
+                                .execute();
+
+                /* Ensure that the response is not null before retrieving data from it to avoid errors. */
+                if (listTopicResponseesponse.getTopic() != null) {
+                    topics.addAll(listTopicResponseesponse.getTopic());
+                    pageToken = listTopicResponseesponse.getNextPageToken();
+                }
+            } while (pageToken != null);
+
+            if (topics.isEmpty()) {
+                System.out.println("No topics found.");
+            }
+        } catch (GoogleJsonResponseException e) {
+            // TODO (developer) - handle error appropriately
+            GoogleJsonError error = e.getDetails();
+            System.out.println(error);
+            if (error.getCode() == 404) {
+                System.out.printf("The courseId does not exist: %s.\n", JAVA_COURSE_ID);
+            } else {
+                throw e;
+            }
+        } catch (Exception e) {
+            throw e;
+        }
+        return topics;
+    }
 }

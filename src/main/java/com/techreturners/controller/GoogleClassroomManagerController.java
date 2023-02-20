@@ -1,8 +1,9 @@
 package com.techreturners.controller;
 
 import com.google.api.services.classroom.model.Course;
+import com.google.api.services.classroom.model.Student;
+import com.google.api.services.classroom.model.Topic;
 import com.techreturners.ClassroomQuickstart;
-import com.techreturners.GoogleClassroomApiApplication;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,4 +24,15 @@ public class GoogleClassroomManagerController {
     public List<Course> getClassroomInfo() throws GeneralSecurityException, IOException {
         return classroomQuickstart.getCourses();
     }
+
+    @GetMapping("/students")
+    public List<Student> getStudentList() throws GeneralSecurityException, IOException {
+        return classroomQuickstart.getStudentList();
+    }
+
+    @GetMapping("/topics")
+    public List<Topic> getCourseTopics() throws GeneralSecurityException, IOException {
+        return classroomQuickstart.getTopics();
+    }
+
 }
