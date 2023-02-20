@@ -41,7 +41,7 @@ public class Topics {
 
     private static final String CREDENTIALS_FILE_PATH = "/credentials.json";
 
-    private static final String COURSE_ID = "579045242269";
+    private static final String JAVA_COURSE_ID = "579045242269";
 
     /**
      * Creates an authorized Credential object.
@@ -78,8 +78,6 @@ public class Topics {
                         .setApplicationName(APPLICATION_NAME)
                         .build();
 
-
-
         List<Topic> topics = new ArrayList<>();
         String pageToken = null;
 
@@ -89,7 +87,7 @@ public class Topics {
                         service
                                 .courses()
                                 .topics()
-                                .list(COURSE_ID)
+                                .list(JAVA_COURSE_ID)
                                 .setPageSize(100)
                                 .setPageToken(pageToken)
                                 .execute();
@@ -111,18 +109,16 @@ public class Topics {
         } catch (GoogleJsonResponseException e) {
             // TODO (developer) - handle error appropriately
             GoogleJsonError error = e.getDetails();
+            System.out.println(error);
             if (error.getCode() == 404) {
-                System.out.printf("The courseId does not exist: %s.\n", COURSE_ID);
+                System.out.printf("The courseId does not exist: %s.\n", JAVA_COURSE_ID);
             } else {
                 throw e;
             }
         } catch (Exception e) {
             throw e;
         }
-
-        // [END classroom_get_topic_code_snippet]
-
-        }
     }
+}
 
 
