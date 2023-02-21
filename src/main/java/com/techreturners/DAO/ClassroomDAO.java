@@ -1,4 +1,4 @@
-package com.techreturners;
+package com.techreturners.DAO;
 
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
@@ -12,9 +12,9 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
+import com.google.api.services.classroom.Classroom;
 import com.google.api.services.classroom.ClassroomScopes;
 import com.google.api.services.classroom.model.*;
-import com.google.api.services.classroom.Classroom;
 import org.springframework.stereotype.Service;
 
 import java.io.FileNotFoundException;
@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class ClassroomQuickstart {
+public class ClassroomDAO {
     private static final String APPLICATION_NAME = "Google Classroom API Java Quickstart";
     private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
     private static final String TOKENS_DIRECTORY_PATH = "tokens";
@@ -40,13 +40,13 @@ public class ClassroomQuickstart {
 
     private static final String CREDENTIALS_FILE_PATH = "/credentials.json";
 
-    public ClassroomQuickstart() throws GeneralSecurityException, IOException {
+    public ClassroomDAO() throws GeneralSecurityException, IOException {
     }
 
     private static Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT)
             throws IOException {
         // Load client secrets.
-        InputStream in = ClassroomQuickstart.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
+        InputStream in = ClassroomDAO.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
         if (in == null) {
             throw new FileNotFoundException("Resource not found: " + CREDENTIALS_FILE_PATH);
         }
@@ -81,8 +81,8 @@ public class ClassroomQuickstart {
         return courses;
     }
 
-    public List<Student> getStudentList() throws IOException, GeneralSecurityException {
-        ListStudentsResponse response2 = service.courses().students().list(JAVA_COURSE_ID)
+    public List<Student> getStudentList(String courseId) throws IOException, GeneralSecurityException {
+        ListStudentsResponse response2 = service.courses().students().list(courseId)
                 .setPageSize(30)
                 .execute();
         List<Student> students = response2.getStudents();
@@ -92,8 +92,7 @@ public class ClassroomQuickstart {
         return students;
     }
 
-
-    public List<Topic> getTopics() throws IOException, GeneralSecurityException {
+    public List<Topic> getTopics(String courseId) throws IOException, GeneralSecurityException {
         List<Topic> topics = new ArrayList<>();
         String pageToken = null;
         try {
@@ -102,7 +101,7 @@ public class ClassroomQuickstart {
                         service
                                 .courses()
                                 .topics()
-                                .list(JAVA_COURSE_ID)
+                                .list(courseId)
                                 .setPageSize(100)
                                 .setPageToken(pageToken)
                                 .execute();
@@ -122,7 +121,7 @@ public class ClassroomQuickstart {
             GoogleJsonError error = e.getDetails();
             System.out.println(error);
             if (error.getCode() == 404) {
-                System.out.printf("The courseId does not exist: %s.\n", JAVA_COURSE_ID);
+                System.out.printf("The courseId does not exist: %s.\n", courseId);
             } else {
                 throw e;
             }
