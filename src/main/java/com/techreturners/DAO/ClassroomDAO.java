@@ -27,16 +27,17 @@ import java.util.List;
 
 @Service
 public class ClassroomDAO {
-    private static final String APPLICATION_NAME = "Google Classroom API Java Quickstart";
+    private static final String APPLICATION_NAME = "Google Classroom Manager";
     private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
     private static final String TOKENS_DIRECTORY_PATH = "tokens";
-    private static final String JAVA_COURSE_ID = "579045242269";
-
     private static final List<String> SCOPES =
             List.of(ClassroomScopes.CLASSROOM_COURSES_READONLY,
                     ClassroomScopes.CLASSROOM_ROSTERS_READONLY,
                     ClassroomScopes.CLASSROOM_COURSEWORK_STUDENTS,
-                    ClassroomScopes.CLASSROOM_TOPICS);
+                    ClassroomScopes.CLASSROOM_TOPICS,
+                    ClassroomScopes.CLASSROOM_STUDENT_SUBMISSIONS_STUDENTS_READONLY,
+                    ClassroomScopes.CLASSROOM_COURSEWORKMATERIALS
+            );
 
     private static final String CREDENTIALS_FILE_PATH = "/credentials.json";
 
@@ -82,10 +83,10 @@ public class ClassroomDAO {
     }
 
     public List<Student> getStudentList(String courseId) throws IOException, GeneralSecurityException {
-        ListStudentsResponse response2 = service.courses().students().list(courseId)
+        ListStudentsResponse response = service.courses().students().list(courseId)
                 .setPageSize(30)
                 .execute();
-        List<Student> students = response2.getStudents();
+        List<Student> students = response.getStudents();
         if (students == null || students.size() == 0) {
             System.out.println("No students found.");
         }
@@ -122,6 +123,7 @@ public class ClassroomDAO {
             System.out.println(error);
             if (error.getCode() == 404) {
                 System.out.printf("The courseId does not exist: %s.\n", courseId);
+
             } else {
                 throw e;
             }
@@ -130,4 +132,66 @@ public class ClassroomDAO {
         }
         return topics;
     }
+
+    public List<CourseWork> getCoursework(String courseId) throws IOException, GeneralSecurityException {
+
+        ListCourseWorkResponse response = service.courses().courseWork().list(courseId)
+                .execute();
+        List<CourseWork> material = response.getCourseWork();
+        if (material == null || material.size() == 0) {
+            System.out.println("No material found.");
+        }
+        return material;
+    }
+
+    public List<StudentSubmission> getStudentSubmissions(String courseId, String courseWorkId) throws IOException, GeneralSecurityException {
+        List<StudentSubmission> studentSubmissions = new ArrayList<>();
+        String pageToken = null;
+
+        try {
+            do {
+                // Set the userId as a query parameter on the request.
+                ListStudentSubmissionsResponse response =
+                        service
+                                .courses()
+                                .courseWork()
+                                .studentSubmissions()
+                                .list(courseId, courseWorkId)
+                                .setPageToken(pageToken)
+//                                .set("userId", userId)
+                                .execute();
+
+                /* Ensure that the response is not null before retrieving data from it to avoid errors. */
+                if (response.getStudentSubmissions() != null) {
+                    studentSubmissions.addAll(response.getStudentSubmissions());
+                    pageToken = response.getNextPageToken();
+                }
+            } while (pageToken != null);
+
+            if (studentSubmissions.isEmpty()) {
+                System.out.println("No student submission found.");
+            } else {
+                for (StudentSubmission submission : studentSubmissions) {
+                    System.out.printf("Student submission: %s, studentId: %s \n", submission.getId(), submission.getUserId());
+                }
+            }
+        } catch (GoogleJsonResponseException e) {
+            // TODO (developer) - handle error appropriately
+            GoogleJsonError error = e.getDetails();
+            if (error.getCode() == 404) {
+                System.out.printf(
+                        "The courseId (%s), courseWorkId (%s) does " + "not exist.\n",
+                        courseId, courseWorkId);
+            } else {
+                throw e;
+            }
+        } catch (Exception e) {
+            throw e;
+        }
+        return studentSubmissions;
+
+        // [END classroom_list_student_submissions_code_snippet]
+
+    }
+
 }
