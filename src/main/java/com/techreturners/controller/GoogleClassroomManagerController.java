@@ -8,11 +8,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
+
 
 @RestController
 @RequestMapping("/api/v1/googleClassroomManager")
@@ -39,6 +36,11 @@ public class GoogleClassroomManagerController {
         return classroomDAO.getTopics(courseId);
     }
 
+    @GetMapping("/coursework/{courseId}")
+    public List<CourseWork> getCoursework(@PathVariable("courseId") String courseId) throws GeneralSecurityException, IOException {
+        return classroomDAO.getCoursework(courseId);
+    }
+
     @GetMapping("/student-submissions/{courseId}/{courseworkId}/{studentId}")
     public List<StudentSubmission> getStudentSubmission(@PathVariable("courseId") String courseId,
                                                         @PathVariable("courseworkId") String courseworkId,
@@ -47,22 +49,17 @@ public class GoogleClassroomManagerController {
         return classroomDAO.getStudentSubmissions(courseId, courseworkId, studentId);
     }
 
-    @GetMapping("/coursework/{courseId}")
-    public List<CourseWork> getCoursework(@PathVariable("courseId") String courseId) throws GeneralSecurityException, IOException {
-        return classroomDAO.getCoursework(courseId);
-    }
-
     @GetMapping("/coursework/{courseId}/{courseworkId}/{studentId}")
     public List<StudentSubmission> getSubmissionsForStudent(@PathVariable("courseId") String courseId,
-                                                     @PathVariable("courseworkId") String courseworkID,
-                                                     @PathVariable("studentId") String studentId) throws GeneralSecurityException, IOException {
+                                                            @PathVariable("courseworkId") String courseworkID,
+                                                            @PathVariable("studentId") String studentId) throws GeneralSecurityException, IOException {
         return classroomDAO.getStudentSubmissions(courseId, courseworkID, studentId);
     }
 
     @GetMapping("/all-coursework/{courseId}/{studentId}")
     public List<StudentSubmission> getAllSubmissionsForStudent(@PathVariable("courseId") String courseId,
-                                                    @PathVariable("studentId") String studentId) throws Throwable {
-       return classroomService.getAllCourseworkForStudent(courseId, studentId);
+                                                               @PathVariable("studentId") String studentId) throws Throwable {
+        return classroomService.getAllCourseworkForStudent(courseId, studentId);
     }
 
 }

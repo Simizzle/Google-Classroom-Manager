@@ -15,7 +15,6 @@ import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.classroom.Classroom;
 import com.google.api.services.classroom.ClassroomScopes;
 import com.google.api.services.classroom.model.*;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.io.FileNotFoundException;
@@ -146,14 +145,12 @@ public class ClassroomDAO {
         return material;
     }
 
-
     public List<StudentSubmission> getStudentSubmissions(String courseId, String courseWorkId, String userId) throws IOException, GeneralSecurityException {
         List<StudentSubmission> studentSubmissions = new ArrayList<>();
         String pageToken = null;
 
         try {
             do {
-                // Set the userId as a query parameter on the request.
                 ListStudentSubmissionsResponse response =
                         service
                                 .courses()
@@ -164,20 +161,11 @@ public class ClassroomDAO {
                                 .set("userId", userId)
                                 .execute();
 
-                /* Ensure that the response is not null before retrieving data from it to avoid errors. */
                 if (response.getStudentSubmissions() != null) {
                     studentSubmissions.addAll(response.getStudentSubmissions());
                     pageToken = response.getNextPageToken();
                 }
             } while (pageToken != null);
-
-            if (studentSubmissions.isEmpty()) {
-                System.out.println("No student submission found.");
-            } else {
-                for (StudentSubmission submission : studentSubmissions) {
-                    System.out.printf("Student submission: %s, studentId: %s \n", submission.getId(), submission.getUserId());
-                }
-            }
         } catch (GoogleJsonResponseException e) {
             // TODO (developer) - handle error appropriately
             GoogleJsonError error = e.getDetails();
@@ -192,40 +180,5 @@ public class ClassroomDAO {
             throw e;
         }
         return studentSubmissions;
-
-        // [END classroom_list_student_submissions_code_snippet]
-
     }
-
-    @Async
-    public CompletableFuture<StudentSubmission> getIndividualSubmissions(String courseId, String courseworkId, String studentId)
-            throws IOException, GeneralSecurityException {
-        String pageToken = null;
-        StudentSubmission studentSubmission = null;
-//        try {
-            studentSubmission = service.courses()
-                    .courseWork()
-                    .studentSubmissions()
-                    .get(courseId, courseworkId, studentId)
-                    .setCourseId(courseId)
-                    .execute();
-//
-//            if (studentSubmission.isEmpty()) {
-//                System.out.println("No student submission found.");
-//            }
-//
-//        } catch (GoogleJsonResponseException e) {
-//            // TODO (developer) - handle error appropriately
-//            GoogleJsonError error = e.getDetails();
-//            if (error.getCode() == 404) {
-//                System.out.printf(
-//                        "The courseId (%s) does " + "not exist.\n",
-//                        courseId);
-//            } else {
-//                throw e;
-//            }
-//        }
-        return CompletableFuture.completedFuture(studentSubmission);
-    }
-
 }

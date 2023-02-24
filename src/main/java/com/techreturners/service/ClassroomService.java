@@ -43,10 +43,10 @@ public class ClassroomService {
         List<StudentSubmission> submissions = new ArrayList<>();
         courseworkIds = result.get().stream().map(CourseWork::getId).collect(Collectors.toList());
         try {
-            for (int i = 0; i < courseworkIds.size(); i++) {
-                coursework = getOneSubmissionForStudent(courseId, courseworkIds.get(i), studentId);
-                List<StudentSubmission> me = coursework.get();
-                submissions.addAll(me);
+            for (String courseworkId : courseworkIds) {
+                coursework = getOneSubmissionForStudent(courseId, courseworkId, studentId);
+                List<StudentSubmission> submission = coursework.get();
+                submissions.addAll(submission);
             }
         } catch (Throwable e) {
             throw e.getCause();
