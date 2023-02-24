@@ -62,4 +62,10 @@ public class GoogleClassroomManagerController {
         return classroomService.getAllCourseworkForStudent(courseId, studentId);
     }
 
+    @GetMapping("/attendance/{courseId}/{studentId}")
+    public List<StudentSubmission> getAllAttendanceForAStudent(@PathVariable("courseId") String courseId,
+                                                               @PathVariable("studentId") String studentId) throws Throwable {
+        return classroomService.getAllAttendanceForAStudent(courseId, studentId);
+    }
+
 }

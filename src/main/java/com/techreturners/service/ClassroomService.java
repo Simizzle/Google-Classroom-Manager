@@ -24,7 +24,6 @@ public class ClassroomService {
     public CompletableFuture<List<StudentSubmission>> getOneSubmissionForStudent(String courseId, String courseWorkId, String studentId)
             throws IOException, GeneralSecurityException {
         List<StudentSubmission> submissions = classroomDAO.getStudentSubmissions(courseId, courseWorkId, studentId);
-//        List<StudentSubmission> result = submissions.stream().filter(studentSubmission -> studentSubmission.getUserId().equals(studentId)).toList();
         return CompletableFuture.completedFuture(submissions);
     }
 
@@ -46,6 +45,24 @@ public class ClassroomService {
             for (String courseworkId : courseworkIds) {
                 coursework = getOneSubmissionForStudent(courseId, courseworkId, studentId);
                 List<StudentSubmission> submission = coursework.get();
+                submissions.addAll(submission);
+            }
+        } catch (Throwable e) {
+            throw e.getCause();
+        }
+        return submissions;
+    }
+
+    public List<StudentSubmission> getAllAttendanceForAStudent(String courseId, String studentId) throws Throwable {
+        CompletableFuture<List<CourseWork>> result = getAsyncListOfCoursework(courseId);
+        CompletableFuture<List<StudentSubmission>> coursework;
+        List<String> courseworkIds;
+        List<StudentSubmission> submissions = new ArrayList<>();
+        courseworkIds = result.get().stream().map(CourseWork::getId).collect(Collectors.toList());
+        try {
+            for (String courseworkId : courseworkIds) {
+                coursework = getOneSubmissionForStudent(courseId, courseworkId, studentId);
+                List<StudentSubmission> submission = coursework.get().stream().filter(studentSubmission -> studentSubmission.getCourseWorkType().equals("MULTIPLE_CHOICE_QUESTION")).toList();
                 submissions.addAll(submission);
             }
         } catch (Throwable e) {
