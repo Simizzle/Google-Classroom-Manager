@@ -15,6 +15,7 @@ import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.classroom.Classroom;
 import com.google.api.services.classroom.ClassroomScopes;
 import com.google.api.services.classroom.model.*;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.io.FileNotFoundException;
@@ -72,7 +73,6 @@ public class ClassroomDAO {
                     .build();
 
     public List<Course> getCourses() throws IOException, GeneralSecurityException {
-
         ListCoursesResponse response = service.courses().list()
                 .setPageSize(10)
                 .execute();
@@ -114,7 +114,6 @@ public class ClassroomDAO {
                     pageToken = listTopicResponseesponse.getNextPageToken();
                 }
             } while (pageToken != null);
-
             if (topics.isEmpty()) {
                 System.out.println("No topics found.");
             }
@@ -145,6 +144,7 @@ public class ClassroomDAO {
         return material;
     }
 
+
     public List<StudentSubmission> getStudentSubmissions(String courseId, String courseWorkId, String userId) throws IOException, GeneralSecurityException {
         List<StudentSubmission> studentSubmissions = new ArrayList<>();
         String pageToken = null;
@@ -167,7 +167,7 @@ public class ClassroomDAO {
                 }
             } while (pageToken != null);
         } catch (GoogleJsonResponseException e) {
-            // TODO (developer) - handle error appropriately
+            // TODO - handle error appropriately
             GoogleJsonError error = e.getDetails();
             if (error.getCode() == 404) {
                 System.out.printf(

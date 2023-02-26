@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 
 @RestController
@@ -66,6 +67,12 @@ public class GoogleClassroomManagerController {
     public List<StudentSubmission> getAllAttendanceForAStudent(@PathVariable("courseId") String courseId,
                                                                @PathVariable("studentId") String studentId) throws Throwable {
         return classroomService.getAllAttendanceForAStudent(courseId, studentId);
+    }
+
+    @GetMapping("/attendancepercentage/{courseId}/{studentId}")
+    public float getAttendancePercentageForAStudent(@PathVariable("courseId") String courseId,
+                                                                        @PathVariable("studentId") String studentId) throws Throwable {
+        return classroomService.getAttendancePercentage(courseId, studentId);
     }
 
 }
